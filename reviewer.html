@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Reviewer" />
+<meta name="theme-color" content="#080a0f" />
+<title>Benchmark Reviewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080a0f; --bg2:#0b0e15;
+    --surface:rgba(255,255,255,.025); --surface-2:rgba(255,255,255,.05);
+    --glass:rgba(16,19,28,.72);
+    --border:rgba(255,255,255,.08); --border-2:rgba(255,255,255,.14);
+    --text:#eef0f6; --muted:#9aa1b2; --faint:#646b7d;
+    --a1:#8b7bff; --a2:#5b8cff; --a-soft:rgba(139,123,255,.14);
+    --good:#34d399; --good-bg:rgba(52,211,153,.12); --good-bd:rgba(52,211,153,.32);
+    --bad:#fb7185; --bad-bg:rgba(251,113,133,.12); --bad-bd:rgba(251,113,133,.32);
+    --display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+    --sans:"Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --r:18px; --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 18px 40px -20px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.55;
+    background:var(--bg);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;text-size-adjust:100%;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(900px 520px at 12% -8%, rgba(139,123,255,.20), transparent 60%),
+      radial-gradient(820px 520px at 92% -4%, rgba(91,140,255,.16), transparent 62%),
+      radial-gradient(700px 700px at 50% 120%, rgba(52,211,153,.06), transparent 60%),
+      linear-gradient(180deg,var(--bg),var(--bg2));
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:30px 22px 110px}
+  a{color:inherit}
+
+  /* header */
+  header{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+  .mark{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;flex:none;
+    background:linear-gradient(140deg,var(--a1),var(--a2));
+    box-shadow:0 10px 30px -8px rgba(123,123,255,.6),0 1px 0 rgba(255,255,255,.25) inset}
+  .mark svg{width:24px;height:24px}
+  .htxt h1{font-family:var(--display);font-weight:700;font-size:23px;margin:0;letter-spacing:-.4px}
+  .htxt p{margin:3px 0 0;color:var(--muted);font-size:13px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);
+    backdrop-filter:blur(8px)}
+  .pad{padding:18px}
+
+  /* control bar */
+  .control .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+  .field{flex:1;min-width:240px}
+  .lbl{display:block;font-size:11px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.7px;margin:0 0 6px 2px}
+  input[type=url],input[type=file]{width:100%;padding:11px 13px;border:1px solid var(--border-2);border-radius:11px;
+    font-size:14px;background:var(--surface-2);color:var(--text);outline:none;font-family:var(--sans);transition:.15s}
+  input[type=url]::placeholder{color:var(--faint)}
+  input:focus{border-color:var(--a1);box-shadow:0 0 0 3px var(--a-soft)}
+  input[type=file]::file-selector-button{margin-right:10px;border:0;border-radius:8px;padding:6px 12px;
+    background:var(--surface-2);color:var(--text);font-family:var(--sans);font-weight:600;cursor:pointer}
+
+  button{font-family:var(--sans);font-weight:600;cursor:pointer;border:0;border-radius:11px;padding:11px 17px;font-size:14px;transition:.16s ease}
+  .btn-primary{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;
+    box-shadow:0 10px 26px -8px rgba(123,123,255,.55)}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 14px 30px -8px rgba(123,123,255,.7)}
+  .btn-primary:active{transform:translateY(0)}
+  .btn-ghost{background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--border-2);background:rgba(255,255,255,.08)}
+  .btn-danger{background:transparent;border:1px solid var(--bad-bd);color:var(--bad)}
+  .btn-danger:hover{background:var(--bad-bg)}
+  .tiny{font-size:12.5px;padding:8px 13px;border-radius:10px}
+
+  .switch{display:inline-flex;align-items:center;gap:9px;color:var(--muted);font-size:13px;user-select:none;cursor:pointer;
+    padding:10px 4px}
+  .switch input{position:absolute;opacity:0;width:0;height:0}
+  .track{width:38px;height:22px;border-radius:99px;background:var(--surface-2);border:1px solid var(--border-2);position:relative;transition:.2s}
+  .track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:99px;background:var(--faint);transition:.2s}
+  .switch input:checked + .track{background:linear-gradient(135deg,var(--a1),var(--a2));border-color:transparent}
+  .switch input:checked + .track::after{left:18px;background:#fff}
+
+  details.send{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
+  details.send summary{cursor:pointer;color:var(--muted);font-size:13px;list-style:none}
+  details.send summary::-webkit-details-marker{display:none}
+  details.send summary::before{content:"+ ";color:var(--a1);font-weight:700}
+  details.send[open] summary::before{content:"– "}
+  .err{color:var(--bad);font-size:13px;margin-top:10px;min-height:0}
+
+  /* scoreboard */
+  .board{display:flex;gap:14px;margin:22px 0;align-items:stretch;flex-wrap:wrap}
+  .ringcard{display:flex;align-items:center;gap:18px;padding:18px 22px;min-width:260px}
+  .ring{position:relative;width:120px;height:120px;flex:none}
+  .ring svg{width:120px;height:120px;transform:rotate(-90deg)}
+  .ring .trk{fill:none;stroke:rgba(255,255,255,.08);stroke-width:11}
+  .ring .val{fill:none;stroke:url(#grad);stroke-width:11;stroke-linecap:round;
+    transition:stroke-dashoffset .7s cubic-bezier(.2,.7,.2,1)}
+  .ringc{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+  .ringc .rn{font-family:var(--display);font-weight:700;font-size:30px;letter-spacing:-1px;
+    background:linear-gradient(135deg,#fff,#c9c6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ringc .rl{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-top:1px}
+  .rmeta{font-size:13px;color:var(--muted)}
+  .rmeta b{color:var(--text);font-family:var(--display)}
+
+  .tiles{flex:1;min-width:260px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .tile{padding:16px 18px;display:flex;flex-direction:column;justify-content:center}
+  .tile .n{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:-.5px}
+  .tile .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:3px}
+  .tile.c .n{color:var(--good)}
+
+  .section-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:10px 2px 14px}
+  .section-h h2{font-family:var(--display);font-size:16px;margin:0;font-weight:600;letter-spacing:-.2px}
+  .section-h .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .live{font-size:12px;color:var(--faint);display:inline-flex;align-items:center;gap:6px}
+  .live .dot{width:7px;height:7px;border-radius:99px;background:var(--good);box-shadow:0 0 8px var(--good)}
+
+  /* question cards */
+  #list{display:flex;flex-direction:column;gap:14px}
+  .q{overflow:hidden;position:relative;animation:rise .35s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .q::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:.2s}
+  .q.ok::before{background:var(--good)}
+  .q.no::before{background:var(--bad)}
+  .q.ok{box-shadow:var(--shadow),inset 0 0 0 1px var(--good-bd)}
+  .q.no{box-shadow:var(--shadow),inset 0 0 0 1px var(--bad-bd)}
+  .shots{display:flex;gap:10px;padding:16px 18px 8px;overflow-x:auto;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .shots::-webkit-scrollbar{height:7px}
+  .shots::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:99px}
+  .shot{height:158px;max-width:280px;object-fit:contain;background:#fff;border:1px solid var(--border);
+    border-radius:11px;padding:4px;cursor:zoom-in;flex:none;transition:.18s}
+  .shot:hover{transform:translateY(-2px);border-color:var(--border-2)}
+
+  .qbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 18px 16px;border-top:1px solid var(--border)}
+  .ans{display:flex;align-items:center;gap:11px}
+  .ansnum{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-family:var(--display);
+    font-weight:700;font-size:19px;color:#fff;background:linear-gradient(140deg,var(--a1),var(--a2));
+    box-shadow:0 8px 20px -6px rgba(123,123,255,.6),0 1px 0 rgba(255,255,255,.25) inset}
+  .ans .al{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;line-height:1.2}
+  .ans .al b{display:block;color:var(--text);font-size:12.5px;letter-spacing:0;text-transform:none;font-weight:600}
+  .when{font-size:12px;color:var(--faint)}
+
+  .grade{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
+  .glab{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.7px}
+  .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:3px;gap:2px}
+  .opt{width:32px;height:32px;border-radius:8px;background:transparent;border:0;color:var(--muted);font-weight:700;font-family:var(--display);font-size:14px}
+  .opt:hover{background:rgba(255,255,255,.07);color:var(--text)}
+  .opt.sel{background:linear-gradient(135deg,var(--a1),var(--a2));color:#fff;box-shadow:0 6px 16px -6px rgba(123,123,255,.7)}
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:10px}
+  .chip .cd{width:7px;height:7px;border-radius:99px}
+  .chip.ok{background:var(--good-bg);color:var(--good);border:1px solid var(--good-bd)}
+  .chip.ok .cd{background:var(--good);box-shadow:0 0 8px var(--good)}
+  .chip.no{background:var(--bad-bg);color:var(--bad);border:1px solid var(--bad-bd)}
+  .chip.no .cd{background:var(--bad)}
+  .del{background:transparent;border:0;color:var(--faint);padding:8px;border-radius:9px;display:grid;place-items:center}
+  .del:hover{color:var(--bad);background:var(--bad-bg)}
+  .del svg{width:16px;height:16px}
+
+  .empty{text-align:center;padding:54px 24px;border:1px dashed var(--border-2);border-radius:var(--r);color:var(--muted);background:var(--surface)}
+  .empty svg{width:46px;height:46px;opacity:.5;margin-bottom:12px}
+  .empty b{color:var(--text)}
+
+  .lb{position:fixed;inset:0;background:rgba(6,8,12,.86);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:26px;z-index:60}
+  .lb.show{display:flex}
+  .lb img{max-width:95vw;max-height:92vh;border-radius:12px;box-shadow:0 30px 80px -20px rgba(0,0,0,.9)}
+
+  /* ============ phone friendly (<= 680px) ============ */
+  @media (max-width: 680px){
+    .wrap{padding:16px 13px calc(84px + env(safe-area-inset-bottom))}
+    header{gap:11px;margin-bottom:16px}
+    .mark{width:40px;height:40px;border-radius:12px}
+    .mark svg{width:20px;height:20px}
+    .htxt h1{font-size:19px}
+    .htxt p{font-size:12px}
+    .pad{padding:15px}
+
+    /* control bar stacks; 16px inputs stop iOS auto-zoom on focus */
+    .control .row{flex-direction:column;align-items:stretch;gap:10px}
+    .field{min-width:0}
+    input[type=url],input[type=file]{font-size:16px}
+    #refresh{width:100%}
+    .switch{justify-content:flex-start;padding-left:0}
+
+    /* scoreboard stacks */
+    .board{flex-direction:column;gap:12px;margin:16px 0}
+    .ringcard{min-width:0;width:100%;justify-content:center}
+    .tiles{min-width:0;gap:10px}
+    .tile{padding:13px 10px}
+    .tile .n{font-size:21px}
+
+    /* bigger screenshots, one mostly-full-width per swipe */
+    .shots{padding:14px 14px 6px}
+    .shot{height:200px;max-width:82vw}
+
+    /* grading row: stack, and make 1-4 big finger targets */
+    .qbar{flex-direction:column;align-items:stretch;gap:12px;padding:14px}
+    .when{font-size:11px;color:var(--faint)}
+    .grade{margin-left:0;width:100%;gap:10px}
+    .glab{width:100%}
+    .seg{flex:1 1 auto;padding:4px}
+    .opt{flex:1;width:auto;height:44px;font-size:17px}
+    .del{padding:11px;margin-left:auto}
+
+    .section-h h2{font-size:15px}
+    .lb{padding:14px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="htxt">
+      <h1>Benchmark Reviewer</h1>
+      <p>Every question your script sends is captured here — review the screenshots and grade the answer.</p>
+    </div>
+  </header>
+
+  <div class="card pad control">
+    <div class="row">
+      <div class="field">
+        <label class="lbl" for="ep">Cloud Run endpoint</label>
+        <input id="ep" type="url" placeholder="https://your-service-xxxxx.run.app" />
+      </div>
+      <button id="refresh" class="btn-primary">Refresh</button>
+      <label class="switch" title="Reload history every few seconds">
+        <input type="checkbox" id="auto" checked /><span class="track"></span> auto-refresh
+      </label>
+    </div>
+    <div id="err" class="err"></div>
+
+    <details class="send">
+      <summary>Optional — push a test question from here</summary>
+      <div class="row" style="margin-top:12px">
+        <div class="field"><input id="file" type="file" accept="image/*" multiple /></div>
+        <button id="send" class="btn-ghost tiny">Send</button>
+        <span id="sendStatus" class="live"></span>
+      </div>
+    </details>
+  </div>
+
+  <div class="board">
+    <div class="card ringcard">
+      <div class="ring">
+        <svg viewBox="0 0 120 120">
+          <defs><linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#8b7bff"/><stop offset="1" stop-color="#5b8cff"/>
+          </linearGradient></defs>
+          <circle class="trk" cx="60" cy="60" r="52"/>
+          <circle class="val" id="ring" cx="60" cy="60" r="52"/>
+        </svg>
+        <div class="ringc"><div class="rn" id="s-acc">—</div><div class="rl">accuracy</div></div>
+      </div>
+      <div class="rmeta"><b id="s-correct">0</b> of <b id="s-graded">0</b><br>graded correctly</div>
+    </div>
+    <div class="tiles">
+      <div class="card tile"><div class="n" id="s-total">0</div><div class="k">Questions</div></div>
+      <div class="card tile"><div class="n" id="s-graded2">0</div><div class="k">Graded</div></div>
+      <div class="card tile c"><div class="n" id="s-correct2">0</div><div class="k">AI correct</div></div>
+    </div>
+  </div>
+
+  <div class="section-h">
+    <h2>Reviewed questions</h2>
+    <div class="tools">
+      <span id="liveNote" class="live"></span>
+      <button id="export" class="btn-ghost tiny">Export CSV</button>
+      <button id="clearAll" class="btn-danger tiny">Clear all</button>
+    </div>
+  </div>
+  <div id="list"><div class="empty">Loading…</div></div>
+</div>
+
+<div class="lb" id="lb"><img id="lbImg" alt="" /></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY_EP = "ebr_endpoint";
+  function loadEp(){ try{ return localStorage.getItem(KEY_EP) || ""; }catch(e){ return ""; } }
+  function saveEp(v){ try{ localStorage.setItem(KEY_EP, v); }catch(e){} }
+  var $ = function(id){ return document.getElementById(id); };
+
+  var els = {
+    ep:$("ep"), refresh:$("refresh"), auto:$("auto"), err:$("err"),
+    file:$("file"), send:$("send"), sendStatus:$("sendStatus"),
+    list:$("list"), liveNote:$("liveNote"),
+    sTotal:$("s-total"), sGraded:$("s-graded"), sGraded2:$("s-graded2"),
+    sCorrect:$("s-correct"), sCorrect2:$("s-correct2"), sAcc:$("s-acc"),
+    ring:$("ring"), lb:$("lb"), lbImg:$("lbImg")
+  };
+
+  var entries = [], timer = null;
+  var C = 2 * Math.PI * 52;
+  els.ring.style.strokeDasharray = C;
+  els.ring.style.strokeDashoffset = C;
+
+  els.ep.value = loadEp();
+  els.ep.addEventListener("input", function(){ saveEp(els.ep.value.trim()); });
+  function base(){ return els.ep.value.trim().replace(/\/+$/,""); }
+
+  async function fetchHistory(){
+    var ep = base();
+    if(!ep){ els.err.textContent = "Enter your Cloud Run endpoint."; return; }
+    try{
+      var r = await fetch(ep + "/history");
+      var data = await r.json();
+      entries = (data.entries || []);
+      els.err.textContent = "";
+      els.liveNote.innerHTML = '<span class="dot"></span>updated ' + new Date().toLocaleTimeString();
+      render();
+    }catch(e){
+      els.err.textContent = "Couldn't load history — check the endpoint and that the new index.js is deployed. (" + e.message + ")";
+    }
+  }
+
+  function render(){
+    var graded = entries.filter(function(e){ return e.correct != null; });
+    var correct = graded.filter(function(e){ return Number(e.correct) === Number(e.answer); }).length;
+    var pct = graded.length ? correct/graded.length : 0;
+
+    els.sTotal.textContent = entries.length;
+    els.sGraded.textContent = graded.length;
+    els.sGraded2.textContent = graded.length;
+    els.sCorrect.textContent = correct;
+    els.sCorrect2.textContent = correct;
+    els.sAcc.textContent = graded.length ? Math.round(pct*100) + "%" : "—";
+    els.ring.style.strokeDashoffset = graded.length ? C*(1-pct) : C;
+
+    if(!entries.length){
+      els.list.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div>No questions saved yet. <b>Send some from your script</b> and they\'ll appear here automatically.</div></div>';
+      return;
+    }
+    var ep = base();
+    els.list.innerHTML = "";
+    entries.forEach(function(e){
+      var card = document.createElement("article");
+      card.className = "card q" + (e.correct!=null ? (Number(e.correct)===Number(e.answer)?" ok":" no") : "");
+      var shots = e.images.map(function(p){ var u = ep + p; return '<img loading="lazy" class="shot" src="'+u+'" data-full="'+u+'" alt="">'; }).join("");
+      var opts = [1,2,3,4].map(function(n){
+        return '<button class="opt'+(Number(e.correct)===n?' sel':'')+'" data-n="'+n+'">'+n+'</button>';
+      }).join("");
+      var chip = "";
+      if(e.correct != null){
+        chip = Number(e.correct)===Number(e.answer)
+          ? '<span class="chip ok"><span class="cd"></span>Correct</span>'
+          : '<span class="chip no"><span class="cd"></span>Wrong</span>';
+      }
+      var when = e.ts ? new Date(e.ts).toLocaleString() : "";
+      card.innerHTML =
+        '<div class="shots">'+shots+'</div>'+
+        '<div class="qbar">'+
+          '<div class="ans"><span class="ansnum">'+e.answer+'</span><span class="al">option<b>AI answer</b></span></div>'+
+          '<span class="when">'+when+'</span>'+
+          '<div class="grade"><span class="glab">correct</span><div class="seg">'+opts+'</div>'+chip+
+            '<button class="del" title="delete this entry"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+
+          '</div>'+
+        '</div>';
+      card.querySelectorAll(".opt").forEach(function(b){
+        b.onclick = function(){ grade(e.id, Number(b.getAttribute("data-n"))); };
+      });
+      card.querySelector(".del").onclick = function(){ delEntry(e.id); };
+      card.querySelectorAll(".shot").forEach(function(im){
+        im.onclick = function(){ els.lbImg.src = im.getAttribute("data-full"); els.lb.classList.add("show"); };
+      });
+      els.list.appendChild(card);
+    });
+  }
+
+  async function grade(id, n){
+    var e = entries.find(function(x){ return x.id===id; });
+    if(e){ e.correct = n; render(); }
+    try{
+      await fetch(base() + "/grade", { method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ id:id, correct:n }) });
+    }catch(err){ els.err.textContent = "Grade didn't save: " + err.message; }
+  }
+
+  async function delEntry(id){
+    if(!confirm("Delete this entry from storage?")) return;
+    try{
+      await fetch(base() + "/entry/" + encodeURIComponent(id), { method:"DELETE" });
+      entries = entries.filter(function(x){ return x.id!==id; });
+      render();
+    }catch(err){ els.err.textContent = "Delete failed: " + err.message; }
+  }
+
+  els.refresh.addEventListener("click", fetchHistory);
+  function setAuto(){ if(timer){ clearInterval(timer); timer=null; } if(els.auto.checked){ timer=setInterval(fetchHistory,8000); } }
+  els.auto.addEventListener("change", setAuto);
+
+  els.send.addEventListener("click", async function(){
+    var files = Array.prototype.slice.call(els.file.files);
+    if(!files.length){ els.sendStatus.textContent = "pick image(s) first"; return; }
+    els.sendStatus.textContent = "sending…";
+    try{
+      var b64 = await Promise.all(files.map(function(f){
+        return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){res(r.result);}; r.onerror=rej; r.readAsDataURL(f); });
+      }));
+      var r = await fetch(base() + "/", { method:"POST", headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ images:b64 }) });
+      var data = await r.json();
+      els.sendStatus.textContent = (data.answer!=null) ? ("AI answered "+data.answer) : ("error: "+(data.error||r.status));
+      els.file.value = ""; fetchHistory();
+    }catch(err){ els.sendStatus.textContent = "failed: " + err.message; }
+  });
+
+  $("export").addEventListener("click", function(){
+    if(!entries.length) return;
+    var rows = [["timestamp","num_images","ai_answer","correct_answer","is_correct","id"]];
+    entries.slice().reverse().forEach(function(e){
+      rows.push([ e.ts, e.count, e.answer, e.correct==null?"":e.correct,
+        e.correct==null?"":(Number(e.correct)===Number(e.answer)?"1":"0"), e.id ]);
+    });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([rows.map(function(r){return r.join(",");}).join("\n")],{type:"text/csv"}));
+    a.download = "benchmark-results.csv"; a.click();
+  });
+
+  $("clearAll").addEventListener("click", async function(){
+    if(!confirm("Permanently delete ALL saved questions and screenshots from the bucket? This cannot be undone.")) return;
+    try{ await fetch(base() + "/history", { method:"DELETE" }); entries=[]; render(); }
+    catch(err){ els.err.textContent = "Clear failed: " + err.message; }
+  });
+
+  els.lb.addEventListener("click", function(){ els.lb.classList.remove("show"); });
+
+  if(els.ep.value) fetchHistory(); else render();
+  setAuto();
+})();
+</script>
+</body>
+</html>
